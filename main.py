@@ -1,11 +1,25 @@
 import cv2 as cv
 import numpy as np
 
-img = cv.imread('./img/track_first_person_pov.jpg')
+video = cv.VideoCapture('./img/kibukawa_to_minakucki.mp4')
 
-# edge detection
-blurred = cv.GaussianBlur(img, (7,7), 0)
-canny = cv.Canny(blurred, 150, 150)
+while True:
+    isTrue, frame = video.read()
+    frame = frame[540:1060,580:1450]
+    output = np.zeros(frame.shape, dtype='uint8')
 
-cv.imshow('canny', canny)
-cv.waitKey(0)
+    # edge detection
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    blurred = cv.GaussianBlur(gray, (7,7), 0, borderType=cv.BORDER_REPLICATE)
+    canny = cv.Canny(blurred, 125, 255)
+
+    contours, hierarchies = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+    cv.drawContours(output, contours, -1, (255, 255, 255), 1)
+
+    cv.imshow("video", output)
+
+    if cv.waitKey(20) & 0xFF == ord('q'):
+        break
+
+video.release()
+cv.destroyAllWindows()
