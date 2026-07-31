@@ -1,3 +1,5 @@
+from pickletools import uint8
+
 import cv2 as cv
 import numpy as np
 
@@ -11,10 +13,18 @@ while True:
     # edge detection
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     blurred = cv.GaussianBlur(gray, (7,7), 0, borderType=cv.BORDER_REPLICATE)
-    canny = cv.Canny(blurred, 125, 255)
+    canny = cv.Canny(blurred, 87, 255)
 
     contours, hierarchies = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
-    cv.drawContours(output, contours, -1, (255, 255, 255), 1)
+    valid_contours = []
+    for c in contours:
+        if len(c) < 87:
+            continue
+        valid_contours.append(c)
+
+    cv.drawContours(output, valid_contours, -1, (255, 255, 255), 1)
+
+    # curvature calculation
 
     cv.imshow("video", output)
 
