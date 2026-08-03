@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-video = cv.VideoCapture('./img/kibukawa_to_minakucki.mp4')
+video = cv.VideoCapture('./img/kibukawa_to_minakuchijyonan.mp4')
 
 while True:
     isTrue, frame = video.read()
@@ -13,18 +13,24 @@ while True:
     blurred = cv.GaussianBlur(gray, (7,7), 0, borderType=cv.BORDER_REPLICATE)
     canny = cv.Canny(blurred, 87, 255)
 
-    contours, hierarchies = cv.findContours(canny, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
-    valid_contours = []
-    for c in contours:
-        if len(c) < 87:
-            continue
-        valid_contours.append(c)
+    results = []
+    lines = cv.HoughLinesP(canny, 1, np.pi / 180, 50, minLineLength=50, maxLineGap=20)
+    if lines is not None:
+        candidates = []
 
-    cv.drawContours(output, valid_contours, -1, (255, 255, 255), 1)
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            length = np.hypot(x2 - x1, y2 - y1)
+            angle = np.degrees(np.arctan2(y2 - y1, x2 - x1))
 
-    # curvature calculation
+            if abs(abs(angle) - 90) > 40:
+                continue
+            if length < 40:
+                continue
 
-    cv.imshow("video", output)
+            cv.line(output, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+    cv.imshow("Hough", output)
 
     if cv.waitKey(20) & 0xFF == ord('q'):
         break
